@@ -1,0 +1,111 @@
+{
+  "info": {
+    "name": "Pedidos Service API",
+    "description": "Colección para probar el microservicio de carga de pedidos",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8081" },
+    { "key": "token", "value": "REEMPLAZAR_CON_JWT" }
+  ],
+  "item": [
+    {
+      "name": "Cargar pedidos - Todos válidos",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" },
+          { "key": "Idempotency-Key", "value": "test-idempotency-001" }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "file",
+              "type": "file",
+              "src": "./samples/pedidos_todos_validos.csv",
+              "description": "CSV con pedidos válidos"
+            }
+          ]
+        },
+        "url": "{{base_url}}/pedidos/cargar",
+        "description": "Carga un CSV con filas completamente válidas. Espera: guardados=5, errores=0"
+      }
+    },
+    {
+      "name": "Cargar pedidos - Mixto (válidos e inválidos)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" },
+          { "key": "Idempotency-Key", "value": "test-idempotency-002" }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "file",
+              "type": "file",
+              "src": "./samples/pedidos_muestra.csv"
+            }
+          ]
+        },
+        "url": "{{base_url}}/pedidos/cargar",
+        "description": "Carga CSV mixto. Espera: guardados=5, errores=5 con distintos tipos"
+      }
+    },
+    {
+      "name": "Cargar pedidos - Idempotencia (mismo key, mismo archivo)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" },
+          { "key": "Idempotency-Key", "value": "test-idempotency-001" }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "file",
+              "type": "file",
+              "src": "./samples/pedidos_todos_validos.csv"
+            }
+          ]
+        },
+        "url": "{{base_url}}/pedidos/cargar",
+        "description": "Mismo Idempotency-Key que la primera request. Debe retornar HTTP 409"
+      }
+    },
+    {
+      "name": "Cargar pedidos - Sin header Idempotency-Key",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            { "key": "file", "type": "file", "src": "./samples/pedidos_todos_validos.csv" }
+          ]
+        },
+        "url": "{{base_url}}/pedidos/cargar",
+        "description": "Sin Idempotency-Key. Debe retornar HTTP 400"
+      }
+    },
+    {
+      "name": "Swagger UI",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/swagger-ui/index.html"
+      }
+    },
+    {
+      "name": "OpenAPI Spec (JSON)",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/v3/api-docs"
+      }
+    }
+  ]
+}

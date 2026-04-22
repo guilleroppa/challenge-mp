@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: pedidos-postgres
+    environment:
+      POSTGRES_DB: pedidos_db
+      POSTGRES_USER: pedidos
+      POSTGRES_PASSWORD: pedidos
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pedidos -d pedidos_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Keycloak para OAuth2/JWT - opcional para pruebas locales
+  # Si no quieres usarlo, activa el perfil 'dev' que deshabilita seguridad
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0
+    container_name: pedidos-keycloak
+    command: start-dev
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pedidos-app
+    environment:
+      DB_USER: pedidos
+      DB_PASSWORD: pedidos
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/pedidos_db
+      JWK_SET_URI: http://keycloak:8080/realms/pedidos/protocol/openid-connect/certs
+      BATCH_SIZE: 500
+    ports:
+      - "8081:8081"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    profiles:
+      - full
+
+volumes:
+  postgres_data:

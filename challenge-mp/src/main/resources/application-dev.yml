@@ -1,0 +1,17 @@
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # En perfil dev usamos una clave secreta local para generar JWTs de prueba
+          # O bien deshabilitamos la seguridad completamente con SecurityConfig override
+          issuer-uri: http://localhost:8080/realms/pedidos
+
+# Para pruebas sin Keycloak, puedes generar un JWT en https://jwt.io
+# usando el secret "dev-secret-key-for-testing-only"
+# Header: { "alg": "HS256" }
+# Payload: { "sub": "dev-user", "iss": "dev", "exp": 9999999999 }
+
+logging:
+  level:
+    org.springframework.security: DEBUG
